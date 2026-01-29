@@ -6,104 +6,35 @@
     <title>DOCX to PDF</title>
     
     <script src="mammoth.browser.min.js"></script>
-    <script src="html2pdf.bundle.min.js"></script>
 
     <style>
-        /* Minimalist style with NO BORDERS */
-        body { 
-            font-family: monospace; 
-            background: #fff; 
-            color: #000; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            line-height: 1.5; 
-        }
-        
-        .app-box { 
-            width: 100%; 
-            max-width: 600px; 
-            padding: 25px; 
-        }
-
-        h1 { 
-            font-size: 1.3rem; 
-            text-transform: uppercase; 
-            padding-bottom: 10px; 
-            margin-top: 0; 
-            width: 100%; 
-            border-bottom: 2px solid #000; 
-        }
-
-        input[type="file"] { 
-            width: 100%; 
-            padding: 12px; 
-            margin-bottom: 20px; 
-            border: 1px solid #000;
-        }
-        
-        /* Removed borders here to fix the "unclosed box" in the PDF */
-        #display-box { 
-            width: 100%; 
-            padding: 20px 0; 
-            margin: 20px 0; 
-            display: none; 
-            text-align: left; 
-            background: #fff; 
-        }
-
-        button { 
-            width: 100%; 
-            padding: 15px; 
-            background: #000; 
-            color: #fff; 
-            border: none; 
-            font-weight: bold; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-        }
-
-        button:disabled { 
-            background: #ccc; 
-            cursor: not-allowed; 
-        }
-
-        #status-msg { 
-            background: #f0f0f0; 
-            padding: 10px; 
-            margin-top: 15px; 
-            border-left: 5px solid #000; 
-            font-size: 12px; 
-            width: 100%; 
-        }
-
-        footer { 
-            margin-top: 50px; 
-            max-width: 600px; 
-            text-align: justify; 
-            font-size: 13px; 
-            border-top: 1px solid #000; 
-            padding-top: 20px; 
-        }
+        body { font-family: monospace; background: #fff; color: #000; padding: 20px; display: flex; flex-direction: column; align-items: center; line-height: 1.5; }
+        .app-box { width: 100%; max-width: 600px; padding: 25px; }
+        h1 { font-size: 1.3rem; text-transform: uppercase; padding-bottom: 10px; margin-top: 0; width: 100%; border-bottom: 2px solid #000; }
+        input[type="file"] { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #000; }
+        #display-box { width: 100%; padding: 20px 0; margin: 20px 0; display: none; text-align: left; background: #fff; min-height: 200px; user-select: text; }
+        button { width: 100%; padding: 15px; background: #000; color: #fff; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #status-msg { background: #f0f0f0; padding: 10px; margin-top: 15px; border-left: 5px solid #000; font-size: 12px; width: 100%; }
+        footer { margin-top: 50px; max-width: 600px; text-align: justify; font-size: 13px; border-top: 1px solid #000; padding-top: 20px; }
     </style>
 </head>
 <body>
 
     <div class="app-box">
         <h1>DOCX to PDF</h1>
-        <input type="file" id="file-input" accept=".docx" style="width: 100%;">
+        <input type="file" id="file-input" accept=".docx, .txt, .log, .md, .json" style="width: 100%;">
         
         <div id="display-box"></div>
 
-        <button id="action-btn" disabled>Generate PDF</button>
+        <button id="action-btn" disabled>Export to HTML</button>
         <div id="status-msg">> SYSTEM_READY</div>
     </div>
 
     <footer>
-        <strong>HOW TO USE:</strong> Select a .docx file from your device. Wait for the text to appear in the preview box. Once the text is visible, click the "Generate PDF" button. Your file will process and download automatically to your system.
+        <strong>SUPPORTED FORMATS:</strong> .docx, .txt, .log, .md, .json
         <br><br>
-        <strong>DISCLAIMER:</strong> This tool operates entirely within your local browser environment. No data is transmitted to external servers. Document formatting may vary depending on the complexity of the source file.
+        <strong>HOW IT WORKS:</strong> This utility detects the file type automatically. Word documents are processed for layout preservation, while text and log files are loaded directly for maximum speed and searchability.
     </footer>
 
     <script>
@@ -116,47 +47,49 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            statusMsg.innerText = "> LOADING_FILE...";
+            const extension = file.name.split('.').pop().toLowerCase();
+            statusMsg.innerText = "> DETECTING_FORMAT...";
             const reader = new FileReader();
 
             reader.onload = async (event) => {
                 try {
-                    const result = await mammoth.convertToHtml({ arrayBuffer: event.target.result });
+                    if (extension === 'docx') {
+                        // Word format requires Mammoth extraction
+                        const result = await mammoth.convertToHtml({ arrayBuffer: event.target.result });
+                        displayBox.innerHTML = result.value;
+                    } else {
+                        // All other text formats use direct reading
+                        const text = new TextDecoder().decode(event.target.result);
+                        // Using innerText for text/logs prevents the browser from running malicious scripts
+                        displayBox.innerText = text; 
+                    }
                     
-                    displayBox.innerHTML = result.value;
                     displayBox.style.display = "block";
-                    
-                    statusMsg.innerText = "> READY: " + file.name.toUpperCase();
+                    statusMsg.innerText = "> READER_READY: " + file.name.toUpperCase();
                     actionBtn.disabled = false;
                 } catch (err) {
-                    statusMsg.innerText = "> ERROR: FILE_UNREADABLE (Ensure it is a .docx file)";
+                    statusMsg.innerText = "> ERROR: UNREADABLE_DATA";
                 }
             };
+            
+            // We read as ArrayBuffer to support both Word (binary) and Text formats
             reader.readAsArrayBuffer(file);
         };
 
-        actionBtn.onclick = async () => {
-            const file = fileInput.files[0];
-            actionBtn.disabled = true;
-            statusMsg.innerText = "> EXECUTING_EXPORT...";
+        actionBtn.onclick = () => {
+            const fullHtml = `
+                <!DOCTYPE html>
+                <html>
+                <head><meta charset="UTF-8"><style>body { font-family: sans-serif; padding: 40px; line-height: 1.6; max-width: 800px; margin: auto; }</style></head>
+                <body>${displayBox.innerHTML || displayBox.innerText}</body>
+                </html>`;
 
-            const options = {
-                margin: 0.5,
-                filename: file.name.replace(".docx", ".pdf"),
-                html2canvas: { scale: 2, scrollY: 0, useCORS: true },
-                jsPDF: { unit: 'in', format: 'letter', compress: true },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-            };
-
-            setTimeout(async () => {
-                try {
-                    await html2pdf().set(options).from(displayBox).save();
-                    statusMsg.innerText = "> COMPLETE. CHECK_DOWNLOAD_FOLDER.";
-                } catch (err) {
-                    statusMsg.innerText = "> ERROR: EXPORT_CRASHED";
-                }
-                actionBtn.disabled = false;
-            }, 1000);
+            const blob = new Blob([fullHtml], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileInput.files[0].name.replace(/\.[^/.]+$/, "") + ".html";
+            link.click();
+            statusMsg.innerText = "> EXPORT_SUCCESSFUL.";
         };
     </script>
 </body>
