@@ -9,173 +9,181 @@
     <script src="html2pdf.bundle.min.js"></script>
 
     <style>
-        :root {
-            --black: #000000;
-            --white: #ffffff;
-            --gray: #f2f2f2;
-        }
-
+        :root { --black: #000; --white: #fff; --gray: #f4f4f4; }
         * { box-sizing: border-box; }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: var(--white);
-            color: var(--black);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            -webkit-font-smoothing: antialiased;
+        
+        body { 
+            font-family: Arial, sans-serif; 
+            background: var(--white); 
+            color: var(--black); 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            -webkit-font-smoothing: antialiased; 
         }
 
-        /* Container: Responsive and Sharp */
-        .app-container {
-            width: 100%;
-            max-width: 600px;
-            border: 2px solid var(--black);
-            padding: 40px;
+        /* Responsive UI Container */
+        .app-container { 
+            width: 100%; 
+            max-width: 600px; 
+            border: 2px solid var(--black); 
+            padding: 30px; 
         }
 
-        @media (min-width: 600px) {
-            .app-container { min-width: 550px; }
+        @media (min-width: 600px) { 
+            .app-container { min-width: 550px; } 
         }
 
-        h2 {
-            font-size: 1.2rem;
-            text-transform: uppercase;
+        /* Header / Title Section */
+        h1 { 
+            font-size: 1.3rem; 
+            text-transform: uppercase; 
+            border-bottom: 2px solid var(--black); 
+            padding-bottom: 10px; 
+            margin-top: 0; 
             letter-spacing: 1px;
-            margin-top: 0;
-            border-bottom: 2px solid var(--black);
-            padding-bottom: 10px;
         }
 
-        .action-box { margin: 30px 0; }
-
-        input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--black);
-            margin-bottom: 20px;
-            font-family: monospace;
-        }
-
-        button {
-            width: 100%;
-            background-color: var(--black);
-            color: var(--white);
-            border: none;
-            padding: 15px;
-            font-weight: bold;
-            text-transform: uppercase;
+        input[type="file"] { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid var(--black); 
+            margin-bottom: 20px; 
+            font-family: monospace; 
             cursor: pointer;
         }
 
-        button:disabled { background-color: #999; cursor: not-allowed; }
-
-        #console-output {
-            margin-top: 20px;
-            background-color: var(--gray);
-            padding: 15px;
-            font-family: monospace;
-            font-size: 13px;
-            text-align: left;
-            border-left: 4px solid var(--black);
+        /* Preview Area */
+        #preview-box { 
+            width: 100%; 
+            height: 350px; 
+            border: 1px solid var(--black); 
+            overflow-y: auto; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            background: var(--white);
+            text-align: left; /* Keep document alignment natural */
+            display: none; 
         }
 
-        /* Footer: Sharp text with Justify alignment */
-        footer {
-            margin-top: 50px;
-            max-width: 600px;
-            font-size: 0.9rem;
-            text-align: justify; /* Justified for the webapp words */
-            line-height: 1.6;
+        button { 
+            width: 100%; 
+            background: var(--black); 
+            color: var(--white); 
+            border: none; 
+            padding: 15px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            cursor: pointer; 
         }
 
-        .section-title {
-            font-weight: bold;
-            text-transform: uppercase;
-            display: block;
-            margin-top: 15px;
-            text-decoration: underline;
+        button:disabled { background: #999; cursor: not-allowed; }
+
+        #console { 
+            background: var(--gray); 
+            padding: 12px; 
+            font-family: monospace; 
+            font-size: 13px; 
+            border-left: 5px solid var(--black); 
+            margin-top: 15px; 
         }
 
-        .hidden { display: none; }
+        /* Justified Footer Text */
+        footer { 
+            margin-top: 50px; 
+            max-width: 600px; 
+            font-size: 0.9rem; 
+            text-align: justify; 
+            line-height: 1.6; 
+        }
+
+        .bold-label { 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            display: block; 
+            margin-top: 15px; 
+            text-decoration: underline; 
+        }
     </style>
 </head>
 <body>
 
     <div class="app-container">
-        <h2>DOCX to PDF</h2>
+        <h1>DOCX to PDF</h1>
         
-        <div class="action-box">
-            <input type="file" id="fileIn" accept=".docx">
-            <button id="runBtn" disabled>Start Conversion & Download</button>
-        </div>
+        <input type="file" id="fileInput" accept=".docx">
+        
+        <div id="preview-box"></div>
 
-        <div id="console-output">> WAITING_FOR_FILE...</div>
+        <button id="convertBtn" disabled>Convert & Download PDF</button>
+        
+        <div id="console">> SYSTEM_READY...</div>
     </div>
 
-    <div id="capture-zone" class="hidden"></div>
-
     <footer>
-        <span class="section-title">Instructions</span>
-        To use this utility, select a valid .docx file from your local storage. Once the system detects the file, the execute button will activate. Upon clicking, the application will process the document structure within your browser's local memory environment and automatically trigger a system download for the resulting PDF file.
+        <span class="bold-label">How to use</span>
+        Select a .docx file from your local machine to generate an instant on-screen preview. Once the preview is loaded, the conversion button will activate. Clicking the button will initiate the local browser-side conversion process and immediately trigger the download of your PDF document.
 
-        <span class="section-title">Disclaimer</span>
-        This application operates entirely on the client-side. No data packets containing your document content are transmitted to external servers or third-party entities. The integrity of the original formatting is dependent on the complexity of the source document. Use of this tool constitutes an acknowledgment that the developer is not responsible for data loss or formatting discrepancies.
+        <span class="bold-label">Disclaimer</span>
+        All processing occurs within your browser's local memory. No files are uploaded to any external server, ensuring your data remains private. This tool is provided for functional convenience. Formatting may vary based on the complexity of the source document.
     </footer>
 
     <script>
-        const fileIn = document.getElementById('fileIn');
-        const runBtn = document.getElementById('runBtn');
-        const consoleOut = document.getElementById('console-output');
-        const captureZone = document.getElementById('capture-zone');
+        const fileInput = document.getElementById('fileInput');
+        const previewBox = document.getElementById('preview-box');
+        const convertBtn = document.getElementById('convertBtn');
+        const consoleLog = document.getElementById('console');
 
-        fileIn.onchange = (e) => {
-            if (e.target.files[0]) {
-                consoleOut.innerText = `> FILE_LOADED: ${e.target.files[0].name.toUpperCase()}`;
-                runBtn.disabled = false;
-            }
-        };
+        // Logic: Preview Generation
+        fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
 
-        runBtn.onclick = async () => {
-            const file = fileIn.files[0];
-            runBtn.disabled = true;
-            consoleOut.innerText = "> INITIALIZING_EXPORT...";
-
+            consoleLog.innerText = "> LOADING_PREVIEW...";
             const reader = new FileReader();
-            reader.onload = async (e) => {
+
+            reader.onload = async (event) => {
                 try {
-                    // Convert Word to HTML
-                    const result = await mammoth.convertToHtml({ arrayBuffer: e.target.result });
-                    captureZone.innerHTML = result.value;
-
-                    consoleOut.innerText = "> GENERATING_PDF_FILE...";
-
-                    // Generate and Download PDF
-                    const options = {
-                        margin: 0.8,
-                        filename: file.name.replace(".docx", ".pdf"),
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 2 },
-                        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-                    };
-
-                    // This .save() command is what triggers the download
-                    await html2pdf().set(options).from(captureZone).save();
-
-                    consoleOut.innerText = "> DOWNLOAD_COMPLETE. SYSTEM_IDLE.";
-                    runBtn.disabled = false;
+                    const result = await mammoth.convertToHtml({ arrayBuffer: event.target.result });
+                    
+                    previewBox.innerHTML = result.value;
+                    previewBox.style.display = "block";
+                    
+                    consoleLog.innerText = `> PREVIEW_SUCCESS: ${file.name.toUpperCase()}`;
+                    convertBtn.disabled = false;
                 } catch (err) {
-                    consoleOut.innerText = "> ERROR: CONVERSION_INTERRUPTED";
-                    runBtn.disabled = false;
+                    consoleLog.innerText = "> ERROR: FILE_UNREADABLE";
                 }
             };
-
             reader.readAsArrayBuffer(file);
         };
-    </script>
-</body>
 
+        // Logic: Final PDF Export
+        convertBtn.onclick = async () => {
+            const filename = fileInput.files[0].name.replace(".docx", ".pdf");
+            convertBtn.disabled = true;
+            consoleLog.innerText = "> EXECUTING_PDF_EXPORT...";
+
+            const options = {
+                margin: 0.75,
+                filename: filename,
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            try {
+                // Captures the visible preview content
+                await html2pdf().set(options).from(previewBox).save();
+                consoleLog.innerText = "> DOWNLOAD_COMPLETE.";
+            } catch (err) {
+                consoleLog.innerText = "> ERROR: EXPORT_FAILED";
+            } finally {
+                convertBtn.disabled = false;
+            }
+        };
+    </script>
+
+</body>
 </html>
